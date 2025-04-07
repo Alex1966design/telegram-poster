@@ -1,27 +1,28 @@
 import os
 import requests
 from flask import Flask, request
-from dotenv import load_dotenv
 from pathlib import Path
 
-# Загружаем переменные из .env
-load_dotenv()
+# Загружаем .env только локально
+if Path(".env").exists():
+    from dotenv import load_dotenv
+    load_dotenv()
 
-# Отладка: проверим, загружается ли .env
+# Отладочный вывод
 print("📂 Текущая рабочая директория:", Path.cwd())
 print("📄 Файл .env найден?", Path(".env").exists())
 print("🔐 TELEGRAM_BOT_TOKEN:", os.getenv("TELEGRAM_BOT_TOKEN"))
 print("💬 TELEGRAM_CHAT_ID:", os.getenv("TELEGRAM_CHAT_ID"))
 
-# Получаем переменные
+# Чтение переменных окружения
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-# Проверка
+# Проверка наличия переменных
 if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-    raise ValueError("Не найден TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID. Проверь .env файл.")
+    raise ValueError("❌ Не найден TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID. Проверь переменные окружения.")
 
-# Создаём Flask-приложение
+# Flask-приложение
 app = Flask(__name__)
 
 @app.route("/", methods=["POST"])
@@ -29,7 +30,6 @@ def post_to_telegram():
     data = request.json
     message = data.get("message", "⚠️ Сообщение не получено")
 
-    # Отправка в Telegram
     url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
     payload = {
         "chat_id": TELEGRAM_CHAT_ID,
@@ -43,4 +43,5 @@ def post_to_telegram():
     }
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # ⚠️ Обязательно указываем host и port для Koyeb
+    app.run(debug=True, host="0.0.0.0", port=8000)
