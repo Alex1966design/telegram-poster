@@ -2,25 +2,30 @@ import os
 import requests
 from flask import Flask, request
 from pathlib import Path
+from dotenv import load_dotenv
 
-# Загружаем .env только локально
+# Загружаем переменные из .env (локально) или .env.prod (на сервере)
 if Path(".env").exists():
-    from dotenv import load_dotenv
-    load_dotenv()
+    print("📄 Загрузка из .env")
+    load_dotenv(".env")
+elif Path(".env.prod").exists():
+    print("📄 Загрузка из .env.prod")
+    load_dotenv(".env.prod")
+else:
+    print("⚠️ Файл .env или .env.prod не найден")
 
-# Отладочный вывод
+# Отладка — вывод переменных
 print("📂 Текущая рабочая директория:", Path.cwd())
-print("📄 Файл .env найден?", Path(".env").exists())
 print("🔐 TELEGRAM_BOT_TOKEN:", os.getenv("TELEGRAM_BOT_TOKEN"))
 print("💬 TELEGRAM_CHAT_ID:", os.getenv("TELEGRAM_CHAT_ID"))
 
-# Чтение переменных окружения
+# Получаем переменные
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
 
-# Проверка наличия переменных
+# Проверка
 if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
-    raise ValueError("❌ Не найден TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID. Проверь переменные окружения.")
+    raise ValueError("❌ Не найден TELEGRAM_BOT_TOKEN или TELEGRAM_CHAT_ID. Проверь .env.prod или .env файл.")
 
 # Flask-приложение
 app = Flask(__name__)
@@ -43,5 +48,4 @@ def post_to_telegram():
     }
 
 if __name__ == "__main__":
-    # ⚠️ Обязательно указываем host и port для Koyeb
     app.run(debug=True, host="0.0.0.0", port=8000)
